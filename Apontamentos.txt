@@ -1,0 +1,791 @@
+Renderização de imagens de tridimencionais com Resterization
+e com Ray Tracing
+
+O objetivo do seu programa é gerar
+imagens usando o protocolo Raytracing. Esses
+imagens geradas por computador representarão cada uma
+cena, como visto de um ângulo e posição específicos,
+definido por simples objetos geométricos, e cada um com
+seu próprio sistema de iluminação.
+
+Usar mininlx
+
+O gerenciamento da sua janela deve permanecer fluido: mudando para outra janela,
+minimização, etc.
+
+Instruções
+----------
+
+1- Você precisa de pelo menos esses três objetos
+geométricos simples: plano, esfera, cilindro.
+
+2-Se aplicável, todas as interseções possíveis e o interior dos objetos devem ser manuseados
+corretamente.
+
+3- Seu programa deve ser capaz de redimensionar as propriedades únicas dos objetos: diâmetro para
+uma esfera e a largura e altura para um cilindro
+
+4- Seu programa deve ser capaz de aplicar transformações de tradução e rotação para
+objetos, luzes e câmeras (exceto para esferas e luzes que não podem ser giradas).
+
+5- Gerenciamento de luz: brilho do ponto, sombras duras, iluminação ambiente (objetos são
+nunca completamente no escuro). Você deve implementar iluminação ambiente e difusa.
+
+6- O programa exibe a imagem em uma janela e respeita as seguintes regras:
+
+Pressionar o ESC deve fechar a janela e sair do programa de forma limpa.
+◦ Clicar na cruz vermelha na moldura da janela deve fechar a janela e sair
+o programa de forma limpa.
+◦ O uso de imagens da biblioteca minilibX é fortemente recomendado.
+
+7- Seu programa deve tomar como seu primeiro argumento um arquivo de descrição de cena com o .rt
+extensão.
+
+Cada tipo de elemento pode ser separado por uma ou mais quebras de linha.
+◦ Cada tipo de informação de um elemento pode ser separado por um ou mais
+espaços.
+
+◦ Cada tipo de elemento pode ser definido em qualquer ordem no arquivo.
+◦ Elementos definidos por uma letra maiúscula só podem ser declarados uma vez na cena
+Cada tipo de elemento pode ser separado por uma ou mais quebras de linha.
+◦ Cada tipo de informação de um elemento pode ser separado por um ou mais
+espaços.
+◦ Cada tipo de elemento pode ser definido em qualquer ordem no arquivo.
+◦ Elementos definidos por uma letra maiúscula só podem ser declarados uma vez na cena
+
+
+
+Sim. O **MiniRT** é um dos projetos mais famosos da 42, e talvez um dos que mais fazem os alunos mudarem a forma de pensar sobre programação. Até esse momento, muitos projetos da 42 focam em algoritmos, parsing e estruturas de dados. O MiniRT introduz um assunto completamente diferente: **Computação Gráfica (Computer Graphics)**.
+
+A melhor forma de entender o projeto é pensar nele da seguinte maneira:
+
+> **O MiniRT é um programa que simula como a luz interage com objetos 3D para gerar uma imagem 2D.**
+
+Ou seja, vocês vão criar um **ray tracer**, um programa que desenha uma cena lançando milhões de raios imaginários.
+
+---
+
+# O que é um Ray Tracer?
+
+Imagine que você está olhando para uma cena.
+
+Normalmente pensamos:
+
+> "A luz sai do Sol e chega aos nossos olhos."
+
+Mas isso seria extremamente caro de simular.
+
+Então o ray tracing faz o contrário.
+
+Ele pergunta:
+
+> "Para cada pixel da tela, o que meu olho está vendo?"
+
+Então:
+
+```
+Olho (Camera)
+      |
+      |
+      |
+      V
+ ----------------------
+|                      |
+|      Tela            |
+|   (Viewport)         |
+|                      |
+ ----------------------
+        |
+        |
+        V
+     Raio
+        |
+        |
+        |
+        V
+      Cena
+```
+
+Para cada pixel:
+
+```
+Pixel (120,40)
+
+↓
+
+Criar um raio
+
+↓
+
+O raio bate em alguma coisa?
+
+↓
+
+SIM
+
+↓
+
+Qual objeto?
+
+↓
+
+Qual cor?
+
+↓
+
+Desenhar pixel
+```
+
+Repete isso para TODOS os pixels.
+
+Se a imagem for
+
+```
+800 x 600
+```
+
+Serão
+
+```
+480.000 raios
+```
+
+Cada um sendo calculado independentemente.
+
+Esse é literalmente o projeto.
+
+---
+
+# O pipeline completo do MiniRT
+
+O projeto inteiro pode ser resumido assim:
+
+```
+Ler arquivo .rt
+
+↓
+
+Guardar objetos
+
+↓
+
+Criar câmera
+
+↓
+
+Para cada pixel
+
+↓
+
+Gerar raio
+
+↓
+
+Encontrar objeto atingido
+
+↓
+
+Calcular iluminação
+
+↓
+
+Colorir pixel
+
+↓
+
+Enviar imagem para MiniLibX
+```
+
+Se você entender esse fluxo, já entendeu 70% do projeto.
+
+---
+
+# Conceitos que vocês precisam estudar
+
+Vou colocá-los na ordem correta.
+
+---
+
+## 1. Vetores (O MAIS IMPORTANTE)
+
+Sem vetores você não faz MiniRT.
+
+Vocês precisam dominar:
+
+```
+Vector3
+
+x
+y
+z
+```
+
+Operações:
+
+### Soma
+
+```
+A + B
+```
+
+### Subtração
+
+```
+A - B
+```
+
+### Multiplicação por escalar
+
+```
+A * t
+```
+
+### Comprimento
+
+```
+|A|
+```
+
+### Normalização
+
+Transformar
+
+```
+(5,2,7)
+```
+
+em
+
+```
+vetor de comprimento 1
+```
+
+---
+
+### Produto Escalar (Dot Product)
+
+Esse é o rei do MiniRT.
+
+```
+A • B
+```
+
+Serve para descobrir
+
+* ângulo
+* iluminação
+* reflexão
+* câmera
+* interseções
+
+Tudo usa dot product.
+
+Estudem MUITO isso.
+
+---
+
+### Produto Vetorial
+
+```
+A × B
+```
+
+Serve para criar bases da câmera.
+
+---
+
+# 2. Geometria Analítica
+
+Depois dos vetores.
+
+Precisam entender:
+
+Ponto
+
+```
+P(x,y,z)
+```
+
+Reta
+
+```
+P = origem + direção * t
+```
+
+Essa fórmula aparece literalmente o projeto inteiro.
+
+```
+Ray
+
+Origin
+
++
+
+Direction
+
+×
+
+t
+```
+
+---
+
+# 3. Equações dos objetos
+
+Cada objeto possui uma equação matemática.
+
+### Esfera
+
+```
+(x-cx)^2
+
++
+
+(y-cy)^2
+
++
+
+(z-cz)^2
+
+=
+
+r²
+```
+
+O ray tracer resolve essa equação.
+
+---
+
+### Plano
+
+Tem uma normal.
+
+---
+
+### Cilindro
+
+É o objeto mais difícil do MiniRT.
+
+---
+
+# 4. Interseções
+
+O coração do projeto.
+
+Pergunta:
+
+```
+Esse raio bate nessa esfera?
+```
+
+Depois
+
+```
+Nesse plano?
+
+Nesse cilindro?
+```
+
+Depois
+
+```
+Qual bate primeiro?
+```
+
+Sempre escolhemos o menor
+
+```
+t
+```
+
+positivo.
+
+---
+
+# 5. Câmera
+
+A câmera define
+
+* posição
+* direção
+
+Depois vocês criam
+
+```
+viewport
+```
+
+Na frente da câmera.
+
+```
+camera
+
+↓
+
+viewport
+
+↓
+
+pixels
+
+↓
+
+raios
+```
+
+---
+
+# 6. Luz
+
+Depois que encontrou o objeto.
+
+Pergunta:
+
+```
+Existe uma luz?
+```
+
+Sim.
+
+Quanto essa luz ilumina esse ponto?
+
+---
+
+# 7. Normais
+
+Todo objeto possui uma normal.
+
+```
+          ↑ normal
+
+        *
+
+────────────── plano
+```
+
+Na esfera
+
+```
+normal =
+
+ponto - centro
+```
+
+Normalizado.
+
+---
+
+# 8. Iluminação
+
+MiniRT normalmente usa
+
+Lambert Diffuse
+
+```
+intensidade
+
+=
+
+dot(normal,luz)
+```
+
+Isso produz sombras bonitas.
+
+---
+
+# 9. Shadows
+
+Agora a pergunta muda.
+
+```
+Achei o ponto.
+
+Ele consegue enxergar a luz?
+```
+
+Se outro objeto estiver na frente:
+
+```
+Sombra.
+```
+
+---
+
+# 10. Parsing
+
+Antes de tudo isso.
+
+Precisam ler
+
+```
+scene.rt
+```
+
+Exemplo
+
+```
+A 0.2 255,255,255
+
+C 0,0,-50 0,0,1 70
+
+L 10,20,20 0.7 255,255,255
+
+sp 0,0,0 20 255,0,0
+```
+
+Transformar em structs.
+
+---
+
+# 11. MiniLibX
+
+Ela só mostra a imagem.
+
+Não faz ray tracing.
+
+Ela apenas recebe um buffer:
+
+```
+Pixel[800][600]
+```
+
+E desenha.
+
+---
+
+# Como dividir o projeto em módulos
+
+Eu faria assim.
+
+```
+miniRT
+
+│
+
+├── parser
+
+├── math
+
+├── camera
+
+├── ray
+
+├── intersections
+
+├── lighting
+
+├── renderer
+
+├── mlx
+
+└── utils
+```
+
+---
+
+# Divisão entre duas pessoas
+
+## Pessoa A
+
+Infraestrutura.
+
+* Parser
+* Leitura do .rt
+* MiniLibX
+* Estruturas
+* Camera
+* Organização
+
+---
+
+## Pessoa B
+
+Motor gráfico.
+
+* Vetores
+* Rays
+* Interseções
+* Luz
+* Sombras
+* Renderização
+
+---
+
+Depois juntam.
+
+Essa divisão costuma funcionar muito bem porque as dependências são claras.
+
+---
+
+# Ordem de implementação
+
+## Etapa 1
+
+Criar vetor.
+
+```
+vec_add()
+
+vec_sub()
+
+vec_dot()
+
+vec_cross()
+
+vec_norm()
+
+vec_length()
+```
+
+Nada mais.
+
+---
+
+## Etapa 2
+
+Criar ray.
+
+```
+typedef struct s_ray
+{
+    t_vec origin;
+    t_vec direction;
+} t_ray;
+```
+
+---
+
+## Etapa 3
+
+Esfera.
+
+Somente esfera.
+
+Nada de plano.
+
+Nada de cilindro.
+
+---
+
+## Etapa 4
+
+Renderizar uma esfera vermelha.
+
+Sem luz.
+
+Sem sombras.
+
+Só descobrir
+
+```
+bateu?
+
+vermelho
+
+não bateu?
+
+preto
+```
+
+Essa é uma grande vitória inicial.
+
+---
+
+## Etapa 5
+
+Adicionar luz.
+
+---
+
+## Etapa 6
+
+Adicionar plano.
+
+---
+
+## Etapa 7
+
+Adicionar cilindro.
+
+---
+
+## Etapa 8
+
+Adicionar sombras.
+
+---
+
+## Etapa 9
+
+Adicionar parsing.
+
+---
+
+## Etapa 10
+
+Refatoração.
+
+---
+
+# Livros e recursos para estudar
+
+Eu recomendo estudar nesta ordem:
+
+1. **"Ray Tracing in One Weekend"** — é provavelmente o melhor ponto de partida. Ele ensina exatamente os conceitos que vocês vão implementar, de forma progressiva e acessível. Ray Tracing in One Weekend
+
+2. **"Scratchapixel"** — um excelente recurso online para entender matemática, câmeras, interseções e iluminação em computação gráfica. Ele aprofunda a teoria com diagramas e exemplos.
+
+3. **"3D Math Primer for Graphics and Game Development"** — ótimo para consolidar vetores, matrizes e geometria analítica. 3D Math Primer for Graphics and Game Development
+
+---
+
+# O maior erro que quase todos os grupos cometem
+
+Muitos começam tentando implementar o projeto inteiro ao mesmo tempo:
+
+* parser
+* esfera
+* plano
+* cilindro
+* luz
+* câmera
+* MiniLibX
+
+Resultado: o projeto parece enorme e difícil de depurar.
+
+Em vez disso, construam uma cadeia de funcionalidades que sempre produza algo visível:
+
+1. Mostrar uma janela.
+2. Desenhar um pixel.
+3. Desenhar um fundo.
+4. Lançar um raio por pixel.
+5. Detectar a interseção com **uma única esfera**.
+6. Pintar a esfera.
+7. Adicionar iluminação.
+8. Adicionar os demais objetos.
+
+Assim, a cada etapa vocês terão um programa funcional e será muito mais fácil localizar erros.
+
+## Minha sugestão de plano de estudos (2 semanas)
+
+Se vocês estudarem cerca de 2 a 3 horas por dia:
+
+* **Dias 1–2:** Vetores, produto escalar, produto vetorial, normalização.
+* **Dias 3–4:** Raios, geometria analítica e interseção raio-esfera.
+* **Dias 5–6:** Câmera, viewport e geração de raios para cada pixel.
+* **Dias 7–8:** Iluminação difusa (Lambert) e normais.
+* **Dias 9–10:** Planos e cilindros.
+* **Dias 11–12:** Sombras e múltiplos objetos.
+* **Dias 13–14:** Parsing do `.rt`, integração com a MiniLibX e organização do código.
+
+---
+
+Eu também recomendaria encarar o MiniRT como um pequeno motor gráfico. Em vez de pensar "preciso fazer um projeto da 42", pense que vocês estão construindo, passo a passo, um programa composto por cinco subsistemas:
+
+* **Matemática:** vetores, raios e interseções.
+* **Cena:** parser e estruturas dos objetos.
+* **Renderização:** percorre cada pixel e lança os raios.
+* **Iluminação:** calcula cor, intensidade e sombras.
+* **Exibição:** envia a imagem final para a MiniLibX.
+
+Essa separação mental ajuda muito na implementação e facilita a divisão do trabalho entre os membros da equipe. Quando cada módulo funciona isoladamente, a integração final tende a ser bem mais tranquila.
