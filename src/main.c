@@ -6,8 +6,9 @@ int	main(int argc, char **argv)
 {
 	t_app	app;
 
-	(void)argv;
 	if (!arg_validate(argc))
+		return (1);
+	if (!scene_validate(argv[1]))
 		return (1);
 	app_init(&app);
 	init_camera(&app.camera);
@@ -50,7 +51,7 @@ int	arg_validate(int argc)
 {
 	if (argc != 2)
 	{
-		printf("Obrigatorio o envio do ficheiro!");
+		printf("Error\nA scene file argument is required\n");
 		return (0);
 	}
 	else

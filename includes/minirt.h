@@ -106,6 +106,13 @@ typedef struct s_app
 
 void	app_init(t_app *app);
 void	init_hooks(t_app *app);
+int		scene_validate(const char *path);
+int		scene_parse_line(char *line, int line_no, int *state);
+int		scene_parse_record(char **tokens, int count, int *state);
+int		parse_number(const char *str, double *value);
+int		parse_vector(char *str, int mode);
+int		parse_scalar_range(char *str, double min, double max, int exclusive);
+int		scene_string_equal(const char *left, const char *right);
 
 int		init_mxl(t_app *app);
 int		key_press(int keycode, t_app *app);
