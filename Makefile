@@ -12,14 +12,17 @@ MLX = $(MLX_LIB) -lX11 -lXext
 
 SRC = src/main.c src/init.c src/parse/scene_validate.c \
 	src/parse/scene_parse_values.c src/parse/scene_parse_range.c \
-	src/parse/scene_parse_record.c src/parse/scene_parse_line.c \
+	src/parse/scene_parse_record.c src/parse/scene_parse_object.c \
+	src/parse/scene_parse_line.c src/parse/scene_color.c \
 	src/mlx/mlx_init.c src/mlx/hooks.c \
 	src/mlx/image_init.c src/mlx/image_pixel_put.c src/utils/colors.c \
 	src/math/vector.c src/math/vect_add.c src/math/vect_sub.c \
 	src/math/vect_scale.c src/math/vect_dot.c src/math/vect_length.c \
-	src/math/vect_normalize.c src/ray/ray_create.c src/camera/camera.c \
+	src/math/vect_normalize.c src/math/vect_cross.c \
+	src/ray/ray_create.c src/camera/camera.c \
 	src/intersecption/intersecption.c src/render/render_scene.c \
-	src/math/ray_at.c src/light/light.c src/shadow.c \
+	src/math/ray_at.c src/light/light.c src/light/apply_lighting.c \
+	src/shadow.c \
 	src/intersecption/find_closest_hit.c src/intersecption/intersect_object.c \
 	src/intersecption/intersect_plane.c src/intersecption/intersect_cylinder.c \
 	src/intersecption/cylinder_normal.c

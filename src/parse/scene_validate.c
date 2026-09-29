@@ -37,7 +37,7 @@ static int	read_scene_line(int fd, char *line)
 	return (len + 1);
 }
 
-static int	validate_lines(int fd, int *state)
+static int	validate_lines(int fd, int *state, t_app *app)
 {
 	char	line[4096];
 	int		line_no;
@@ -51,7 +51,7 @@ static int	validate_lines(int fd, int *state)
 	len = read_scene_line(fd, line);
 	while (len > 0)
 	{
-		if (!scene_parse_line(line, ++line_no, state))
+		if (!scene_parse_line(line, ++line_no, state, app))
 			return (0);
 		len = read_scene_line(fd, line);
 	}
@@ -73,7 +73,7 @@ static int	valid_extension(const char *path)
 	return (len >= 3 && scene_string_equal(path + len - 3, ".rt"));
 }
 
-int	scene_validate(const char *path)
+int	scene_load(const char *path, t_app *app)
 {
 	int	state[4];
 	int	fd;
@@ -84,7 +84,8 @@ int	scene_validate(const char *path)
 	fd = open(path, O_RDONLY);
 	if (fd < 0)
 		return (printf("Error\nCould not open scene file\n"), 0);
-	valid = validate_lines(fd, state);
+	app->object_count = 0;
+	valid = validate_lines(fd, state, app);
 	close(fd);
 	if (!valid || !state[0] || !state[1] || !state[2])
 		return (printf("Error\nMissing or invalid scene element\n"), 0);

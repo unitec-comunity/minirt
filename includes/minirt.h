@@ -55,12 +55,14 @@ typedef struct s_sphere
 typedef struct s_ambient
 {
 	double	ratio;
+	t_color	color;
 }	t_ambient;
 
 typedef struct s_light
 {
 	t_vec3	position;
 	double	brightness;
+	t_color	color;
 }	t_light;
 
 typedef struct s_ray
@@ -106,13 +108,17 @@ typedef struct s_app
 
 void	app_init(t_app *app);
 void	init_hooks(t_app *app);
-int		scene_validate(const char *path);
-int		scene_parse_line(char *line, int line_no, int *state);
-int		scene_parse_record(char **tokens, int count, int *state);
+int		scene_load(const char *path, t_app *app);
+int		scene_parse_line(char *line, int line_no, int *state, t_app *app);
+int		scene_parse_record(char **tokens, int count, int *state, t_app *app);
+int		scene_parse_object(char **tokens, int count, int *state, t_app *app);
 int		parse_number(const char *str, double *value);
-int		parse_vector(char *str, int mode);
+int		parse_vector(char *str, int mode, t_vec3 *result);
 int		parse_scalar_range(char *str, double min, double max, int exclusive);
 int		scene_string_equal(const char *left, const char *right);
+int		scene_color(char *str, t_color *color);
+int		apply_lighting(t_color object, t_app *app, double diffuse,
+			t_color *result);
 
 int		init_mxl(t_app *app);
 int		key_press(int keycode, t_app *app);
@@ -132,7 +138,7 @@ double	vec3_length(t_vec3 v);
 t_vec3	vect_normalize(t_vec3 v);
 t_ray	ray_create(t_vec3 origin, t_vec3 direction);
 void	init_camera(t_camera *camera);
-t_vec3	vec3_cross(t_vec3 a, t_vec3 b);
+t_vec3	vect_cross(t_vec3 a, t_vec3 b);
 t_ray	camera_ray(t_camera *camera, int x, int y);
 double	intersect_sphere(t_ray ray, t_object *object);
 t_vec3	ray_at(t_ray ray, double t);

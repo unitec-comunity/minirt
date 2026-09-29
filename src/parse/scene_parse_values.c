@@ -89,7 +89,7 @@ static int	vector_part(char **str, int last, double *value, int mode)
 	return (1);
 }
 
-int	parse_vector(char *str, int mode)
+int	parse_vector(char *str, int mode, t_vec3 *result)
 {
 	double	value[3];
 	int		i;
@@ -105,5 +105,7 @@ int	parse_vector(char *str, int mode)
 	length = value[0] * value[0] + value[1] * value[1] + value[2] * value[2];
 	if (mode == 2 && (length < 0.998 || length > 1.002))
 		return (0);
+	if (result)
+		*result = vec3(value[0], value[1], value[2]);
 	return (1);
 }

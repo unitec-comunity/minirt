@@ -11,69 +11,57 @@
 /* ************************************************************************** */
 #include "../../includes/minirt.h"
 
-static int	parse_ambient(char **tokens, int count, int *state)
+static int	parse_ambient(char **t, int n, int *s, t_app *app)
 {
-	if (count != 3 || state[0])
+	double	ratio;
+
+	if (n != 3 || s[0] || !parse_scalar_range(t[1], 0, 1, 0))
 		return (0);
-	if (!parse_scalar_range(tokens[1], 0.0, 1.0, 0)
-		|| !parse_vector(tokens[2], 1))
+	if (!parse_number(t[1], &ratio) || !scene_color(t[2], &app->ambient.color))
 		return (0);
-	state[0] = 1;
+	app->ambient.ratio = ratio;
+	s[0] = 1;
 	return (1);
 }
 
-static int	parse_camera(char **tokens, int count, int *state)
+static int	parse_camera(char **t, int n, int *s, t_app *app)
 {
-	if (count != 4 || state[1])
+	double	fov;
+
+	if (n != 4 || s[1] || !parse_scalar_range(t[3], 0, 180, 1))
 		return (0);
-	if (!parse_vector(tokens[1], 0) || !parse_vector(tokens[2], 2)
-		|| !parse_scalar_range(tokens[3], 0.0, 180.0, 1))
+	if (!parse_vector(t[1], 0, &app->camera.position)
+		|| !parse_vector(t[2], 2, &app->camera.orientation))
 		return (0);
-	state[1] = 1;
+	if (!parse_number(t[3], &fov))
+		return (0);
+	app->camera.fov = fov;
+	s[1] = 1;
 	return (1);
 }
 
-static int	parse_light(char **tokens, int count, int *state)
+static int	parse_light(char **t, int n, int *s, t_app *app)
 {
-	if (count != 4 || state[2])
+	double	brightness;
+
+	if (n != 4 || s[2] || !parse_scalar_range(t[2], 0, 1, 0))
 		return (0);
-	if (!parse_vector(tokens[1], 0)
-		|| !parse_scalar_range(tokens[2], 0.0, 1.0, 0)
-		|| !parse_vector(tokens[3], 1))
+	if (!parse_vector(t[1], 0, &app->light.position)
+		|| !scene_color(t[3], &app->light.color)
+		|| !parse_number(t[2], &brightness))
 		return (0);
-	state[2] = 1;
+	app->light.brightness = brightness;
+	s[2] = 1;
 	return (1);
 }
 
-static int	parse_object(char **t, int n, int *state)
-{
-	int	valid;
-
-	valid = 0;
-	if (scene_string_equal(t[0], "sp") && n == 4)
-		valid = parse_vector(t[1], 0) && parse_scalar_range(t[2], 0, 1e12, 1)
-			&& parse_vector(t[3], 1);
-	else if (scene_string_equal(t[0], "pl") && n == 4)
-		valid = parse_vector(t[1], 0) && parse_vector(t[2], 2)
-			&& parse_vector(t[3], 1);
-	else if (scene_string_equal(t[0], "cy") && n == 6)
-		valid = parse_vector(t[1], 0) && parse_vector(t[2], 2)
-			&& parse_scalar_range(t[3], 0, 1e12, 1)
-			&& parse_scalar_range(t[4], 0, 1e12, 1)
-			&& parse_vector(t[5], 1);
-	if (!valid || state[3] == MAX_OBJECTS)
-		return (0);
-	state[3]++;
-	return (1);
-}
-
-int	scene_parse_record(char **t, int n, int *state)
+int	scene_parse_record(char **t, int n, int *s, t_app *app)
 {
 	if (scene_string_equal(t[0], "A"))
-		return (parse_ambient(t, n, state));
+		return (parse_ambient(t, n, s, app));
 	if (scene_string_equal(t[0], "C"))
-		return (parse_camera(t, n, state));
+		return (parse_camera(t, n, s, app));
 	if (scene_string_equal(t[0], "L"))
-		return (parse_light(t, n, state));
-	return (parse_object(t, n, state));
+		return (parse_light(t, n, s, app));
+	return (scene_parse_object(t, n, s, app));
 }
