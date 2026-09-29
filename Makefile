@@ -1,28 +1,41 @@
 NAME = miniRT
-CC = cc
+# GCC 15 changed the interpretation of legacy MiniLibX prototypes. Prefer the
+# installed GCC 13; fall back to the system compiler on other machines.
+# CC = $(shell command -v gcc-13 2>/dev/null || command -v cc)
+CC = gcc-13
+#CC = cc
 CFLAGS = -Wall -Wextra -Werror -g
 
 INC = -Iincludes -Idepemdences/minilibx-linux -Idepemdences/next_line
 
-MLX = depemdences/minilibx-linux/libmlx.a -lX11 -lXext
+MLX_DIR = depemdences/minilibx-linux
+MLX_LIB = $(MLX_DIR)/libmlx.a
+MLX_CC = $(CC)
+MLX = $(MLX_LIB) -lX11 -lXext
 
 SRC = src/main.c src/init.c src/mlx/mlx_init.c src/mlx/hooks.c \
-    src/mlx/image_init.c src/mlx/image_pixel_put.c src/utils/colors.c\
-	src/math/vector.c src/math/vect_add.c src/math/vect_sub.c\
-	src/math/vect_scale.c src/math/vect_dot.c src/math/vect_length.c\
-	src/math/vect_normalize.c src/ray/ray_create.c src/camera/camera.c\
-	src/intersecption/intersecption.c src/render/render_scene.c\
-	src/math/ray_at.c src/light/light.c  src/shadow.c\
-	src/intersecption/find_closest_hit.c src/intersecption/intersect_object.c\
-	src/intersecption/intersect_plane.c src/intersecption/intersect_cylinder.c\
+	src/mlx/image_init.c src/mlx/image_pixel_put.c src/utils/colors.c \
+	src/math/vector.c src/math/vect_add.c src/math/vect_sub.c \
+	src/math/vect_scale.c src/math/vect_dot.c src/math/vect_length.c \
+	src/math/vect_normalize.c src/ray/ray_create.c src/camera/camera.c \
+	src/intersecption/intersecption.c src/render/render_scene.c \
+	src/math/ray_at.c src/light/light.c src/shadow.c \
+	src/intersecption/find_closest_hit.c src/intersecption/intersect_object.c \
+	src/intersecption/intersect_plane.c src/intersecption/intersect_cylinder.c \
 	src/intersecption/cylinder_normal.c
 
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
+$(NAME): $(OBJ) $(MLX_LIB)
 	$(CC) $(CFLAGS) $(INC) $(OBJ) $(MLX) -lm -o $(NAME)
+
+$(MLX_LIB):
+	$(MAKE) -C $(MLX_DIR) -f Makefile.gen CC=$(MLX_CC)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 clean:
 	rm -f $(OBJ)
