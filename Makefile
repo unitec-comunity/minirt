@@ -38,9 +38,6 @@ $(MLX_LIB):
 	$(MAKE) -C $(MLX_DIR) -f Makefile.gen CC=$(MLX_CC) \
 		CFLAGS="-O3 -I$(MLX_INC) -std=gnu17"
 
-%.o: %.c
-	$(CC) $(CFLAGS) $(INC) -c $< -o $@
-
 clean:
 	rm -f $(OBJ) depemdences/next_line/get_next_line.o \
 		depemdences/next_line/get_next_line_utils.o
