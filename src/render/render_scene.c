@@ -9,7 +9,6 @@ void	render_scene(t_app *app)
 	t_vec3	hit_point;
 	t_vec3	normal;
 	t_vec3	light_dir;
-	double	intensity;
 	int		color;
 	double	diffuse;
 	t_color	final_color;
@@ -32,8 +31,7 @@ void	render_scene(t_app *app)
 					diffuse = 0.0;
 				else
 					diffuse = diffuse_light(normal, light_dir);
-				intensity = final_intensity(app->ambient.ratio, diffuse);
-				final_color = color_scale(hit.object->color, intensity);
+				apply_lighting(hit.object->color, app, diffuse, &final_color);
 				color = color_to_int(final_color);
 				img_pixel_put(&app->img, x, y, color);
 			}
