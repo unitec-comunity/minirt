@@ -144,5 +144,5 @@ int	cylinder_height_valid(t_ray ray, t_object *object, double t);
 double	intersect_cylinder(t_ray ray, t_object *object);
 t_vec3	cylinder_normal(t_object *object, t_vec3 point);
 double	intersect_cylinder_caps(t_ray ray, t_object *object);
-
+t_vec3	vect_cross(t_vec3 a, t_vec3 b);
 #endif
