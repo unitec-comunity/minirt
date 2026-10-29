@@ -1,4 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   intersecption.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lemos <lemos@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/29 00:00:00 by lemos             #+#    #+#             */
+/*   Updated: 2026/10/29 00:00:00 by lemos            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "../../includes/minirt.h"
+
+static double	sphere_nearest_root(double a, double b, double c)
+{
+	double	discriminant;
+	double	t1;
+	double	t2;
+
+	discriminant = b * b - 4.0 * a * c;
+	if (discriminant < 0)
+		return (-1);
+	t1 = (-b - sqrt(discriminant)) / (2.0 * a);
+	t2 = (-b + sqrt(discriminant)) / (2.0 * a);
+	if (t1 > 0)
+		return (t1);
+	if (t2 > 0)
+		return (t2);
+	return (-1);
+}
 
 double	intersect_sphere(t_ray ray, t_object *object)
 {
@@ -6,27 +35,10 @@ double	intersect_sphere(t_ray ray, t_object *object)
 	double	a;
 	double	b;
 	double	c;
-	double	discriminant;
-	double	t1;
-	double	t2;
 
 	oc = vect_sub(ray.origin, object->position);
-
 	a = vect_dot(ray.direction, ray.direction);
 	b = 2.0 * vect_dot(ray.direction, oc);
-	c = vect_dot(oc, oc)
-		- object->radius * object->radius;
-
-	discriminant = b * b - 4.0 * a * c;
-	if (discriminant < 0)
-		return (-1);
-
-	t1 = (-b - sqrt(discriminant)) / (2.0 * a);
-	t2 = (-b + sqrt(discriminant)) / (2.0 * a);
-
-	if (t1 > 0)
-		return (t1);
-	if (t2 > 0)
-		return (t2);
-	return (-1);
+	c = vect_dot(oc, oc) - object->radius * object->radius;
+	return (sphere_nearest_root(a, b, c));
 }

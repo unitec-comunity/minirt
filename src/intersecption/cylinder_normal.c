@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cylinder_normal.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lemos <lemos@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/29 00:00:00 by lemos             #+#    #+#             */
+/*   Updated: 2026/10/29 00:00:00 by lemos            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "../../includes/minirt.h"
 
 t_vec3	cylinder_normal(t_object *object, t_vec3 point)
@@ -57,15 +68,15 @@ double	intersect_cylinder_caps(t_ray ray, t_object *object)
 
 	axis = vect_normalize(object->normal);
 	top_center = vect_add(
-		object->position,
-		vect_scale(axis, object->height / 2.0));
+			object->position,
+			vect_scale(axis, object->height / 2.0));
 	bottom_center = vect_sub(
-		object->position,
-		vect_scale(axis, object->height / 2.0));
+			object->position,
+			vect_scale(axis, object->height / 2.0));
 	top_t = intersect_cylinder_cap(
-		ray, object, top_center, axis);
+			ray, object, top_center, axis);
 	bottom_t = intersect_cylinder_cap(
-		ray, object, bottom_center, axis);
+			ray, object, bottom_center, axis);
 	if (top_t > 0 && bottom_t > 0)
 		return (fmin(top_t, bottom_t));
 	if (top_t > 0)

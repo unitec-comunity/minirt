@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   image_pixel_put.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lemos <lemos@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/29 00:00:00 by lemos             #+#    #+#             */
+/*   Updated: 2026/10/29 00:00:00 by lemos            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "../../includes/minirt.h"
 
 void	img_pixel_put(t_img *img, int x, int y, int color)
@@ -5,8 +16,8 @@ void	img_pixel_put(t_img *img, int x, int y, int color)
 	char	*dst;
 
 	dst = img->addr
-	+ (y * img->line_len)
-	+ (x * (img->bpp / 8));
+		+ (y * img->line_len)
+		+ (x * (img->bpp / 8));
 	*(unsigned int *)dst = color;
 }
 

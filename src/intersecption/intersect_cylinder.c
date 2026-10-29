@@ -1,24 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   intersect_cylinder.c                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lemos <lemos@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/29 00:00:00 by lemos             #+#    #+#             */
+/*   Updated: 2026/10/29 00:00:00 by lemos            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "../../includes/minirt.h"
 
-double	intersect_cylinder_side(t_ray ray, t_object *object)
+static t_vec3	perpendicular_component(t_vec3 vector, t_vec3 axis)
 {
-	t_vec3	axis;
-	t_vec3	oc;
-	t_vec3	d_perp;
-	t_vec3	oc_perp;
+	return (vect_sub(vector, vect_scale(axis, vect_dot(vector, axis))));
+}
+
+static double	cylinder_side_roots(t_ray ray, t_object *object,
+		t_vec3 d_perp, t_vec3 oc_perp)
+{
 	double	a;
 	double	b;
 	double	c;
 	double	discriminant;
-	double	t1;
-	double	t2;
+	double	roots[2];
 
-	axis = vect_normalize(object->normal);
-	oc = vect_sub(ray.origin, object->position);
-	d_perp = vect_sub(ray.direction,
-			vect_scale(axis, vect_dot(ray.direction, axis)));
-	oc_perp = vect_sub(oc,
-			vect_scale(axis, vect_dot(oc, axis)));
 	a = vect_dot(d_perp, d_perp);
 	if (a < 1e-8)
 		return (-1);
@@ -28,13 +34,27 @@ double	intersect_cylinder_side(t_ray ray, t_object *object)
 	discriminant = b * b - 4.0 * a * c;
 	if (discriminant < 0)
 		return (-1);
-	t1 = (-b - sqrt(discriminant)) / (2.0 * a);
-	t2 = (-b + sqrt(discriminant)) / (2.0 * a);
-	if (t1 > 0 && cylinder_height_valid(ray, object, t1))
-		return (t1);
-	if (t2 > 0 && cylinder_height_valid(ray, object, t2))
-		return (t2);
+	roots[0] = (-b - sqrt(discriminant)) / (2.0 * a);
+	roots[1] = (-b + sqrt(discriminant)) / (2.0 * a);
+	if (roots[0] > 0 && cylinder_height_valid(ray, object, roots[0]))
+		return (roots[0]);
+	if (roots[1] > 0 && cylinder_height_valid(ray, object, roots[1]))
+		return (roots[1]);
 	return (-1);
+}
+
+double	intersect_cylinder_side(t_ray ray, t_object *object)
+{
+	t_vec3	axis;
+	t_vec3	oc;
+	t_vec3	d_perp;
+	t_vec3	oc_perp;
+
+	axis = vect_normalize(object->normal);
+	oc = vect_sub(ray.origin, object->position);
+	d_perp = perpendicular_component(ray.direction, axis);
+	oc_perp = perpendicular_component(oc, axis);
+	return (cylinder_side_roots(ray, object, d_perp, oc_perp));
 }
 
 double	intersect_cylinder(t_ray ray, t_object *object)
