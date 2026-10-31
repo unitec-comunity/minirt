@@ -29,7 +29,19 @@ SRC = src/main.c src/init.c src/parse/scene_validate.c \
 
 OBJ = $(SRC:.c=.o)
 
+TEST = tests/parser_test
+TEST_SRC = tests/test_scene_parser.c src/parse/scene_validate.c \
+	src/parse/scene_parse_values.c src/parse/scene_parse_range.c \
+	src/parse/scene_parse_record.c src/parse/scene_parse_object.c \
+	src/parse/scene_parse_line.c src/parse/scene_color.c src/math/vector.c
+
 all: $(NAME)
+
+test: $(TEST)
+	./$(TEST)
+
+$(TEST): $(TEST_SRC)
+	$(CC) $(CFLAGS) $(INC) $(TEST_SRC) -lm -o $(TEST)
 
 $(NAME): $(OBJ) $(MLX_LIB)
 	$(CC) $(CFLAGS) $(INC) $(OBJ) $(MLX) -lm -o $(NAME)
@@ -39,7 +51,7 @@ $(MLX_LIB):
 		CFLAGS="-O3 -I$(MLX_INC) -std=gnu17"
 
 clean:
-	rm -f $(OBJ) depemdences/next_line/get_next_line.o \
+	rm -f $(OBJ) $(TEST) depemdences/next_line/get_next_line.o \
 		depemdences/next_line/get_next_line_utils.o
 
 fclean: clean

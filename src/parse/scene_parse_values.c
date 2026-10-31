@@ -93,7 +93,6 @@ int	parse_vector(char *str, int mode, t_vec3 *result)
 {
 	double	value[3];
 	int		i;
-	double	length;
 
 	i = 0;
 	while (i < 3)
@@ -102,8 +101,8 @@ int	parse_vector(char *str, int mode, t_vec3 *result)
 			return (0);
 		i++;
 	}
-	length = value[0] * value[0] + value[1] * value[1] + value[2] * value[2];
-	if (mode == 2 && (length < 0.998 || length > 1.002))
+	if (mode == 2 && value[0] == 0.0 && value[1] == 0.0
+		&& value[2] == 0.0)
 		return (0);
 	if (result)
 		*result = vec3(value[0], value[1], value[2]);
